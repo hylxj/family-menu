@@ -1,0 +1,41 @@
+# Java
+target/
+*.class
+*.jar
+*.iml
+.idea/
+.vscode/
+.classpath
+.project
+.settings/
+*.log
+
+# Backend logs (project-level runtime logs)
+backend.log
+family-menu/backend.log
+*.err
+nul
+
+# Node
+node_modules/
+dist/
+*.local
+
+# Env
+.env
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+*.swp
+*.swo
+
+# Build artifacts
+out/
+build/
+
+# Maven wrapper (keep it if committed; ignore local downloads)
+.mvn/wrapper/maven-wrapper.jar

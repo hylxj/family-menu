@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # MySQL 8 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: family-menu-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: family_menu
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - family-menu-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 后端服务
+  backend:
+    build: ../backend
+    container_name: family-menu-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: family_menu
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+    networks:
+      - family-menu-net
+
+  # 前端服务
+  frontend:
+    build: ../frontend
+    container_name: family-menu-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    networks:
+      - family-menu-net
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  family-menu-net:
+    driver: bridge
